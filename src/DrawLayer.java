@@ -37,9 +37,6 @@ public class DrawLayer extends JPanel {
     private Stack<Sketch> undoStack = new Stack<>();
     private Stack<Sketch> redoStack = new Stack<>();
 
-    // Temporary storage used when redrawing the points to ensure lines are drawn in order
-    private Stack<Sketch> redrawStack = new Stack<>();
-
     /* Object to store the lines drawn while the mouse is dragged along with: brush colour and width and the state of
        the erase and reflect flags. */
     private Sketch sketch;
@@ -221,7 +218,8 @@ public class DrawLayer extends JPanel {
     }
 
     /**
-     * Pushes the top of the redo stack to the undo and redraws all previous sketches.
+     * Pushes the top of the redo stack to the undo stack and redraws all previous sketches. It is not strictly
+     * necessary to redraw all sketches when redoing but this leads to much neater code to reuse the redraw method.
      */
     void redo() {
         undoStack.push(redoStack.pop());
@@ -252,27 +250,18 @@ public class DrawLayer extends JPanel {
         g2.setComposite(AlphaComposite.Clear);
         g2.fillRect(0, 0, getWidth(), getHeight());
 
-        // Pop the remaining sketches onto the redrawStack stack to be re drawn
-        while (undoStack.size() > 0) {
-            redrawStack.push(undoStack.pop());
-        }
-
         // Loop while there are still sketches to be redrawn
-        while (redrawStack.size() > 0) {
-
+        for (Sketch sketch : undoStack) {
             // Set all brush settings for that sketch
-            brushColour = redrawStack.peek().getColour();
-            brushWidth = redrawStack.peek().getWidth();
-            reflect = redrawStack.peek().getReflect();
-            erase = redrawStack.peek().getErase();
+            brushColour = sketch.getColour();
+            brushWidth = sketch.getWidth();
+            reflect = sketch.getReflect();
+            erase = sketch.getErase();
 
             // Loop through each line in the sketch and draw them on the image
-            for (Line2D line : redrawStack.peek().getLines()) {
+            for (Line2D line : sketch.getLines()) {
                 drawLine(line);
             }
-
-            // Move the sketch back to the undo stack from the redraw stack once it has been drawn
-            undoStack.push(redrawStack.pop());
         }
 
         // Set all the brush settings back to their original values
@@ -293,7 +282,6 @@ public class DrawLayer extends JPanel {
         g2.fillRect(0, 0, getWidth(), getHeight());
         undoStack.clear();
         redoStack.clear();
-        redrawStack.clear();
         repaint();
     }
 

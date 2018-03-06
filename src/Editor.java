@@ -27,6 +27,10 @@ class Editor {
     private CardLayout cardLayout;
     private JPanel cards;
 
+    // Store the menu bars so their settings are maintained
+    private JMenuBar canvasMenuBar;
+    private JMenuBar galleryMenuBar;
+
     /**
      * Constructor for the main editor which sets up it's properties, adds the drawing and background panels as well
      * as the gallery.
@@ -67,7 +71,9 @@ class Editor {
         window.setContentPane(cards);
 
         // Set the menu bar by calling the canvasMenu method
-        window.setJMenuBar(canvasMenu());
+        canvasMenuBar = canvasMenu();
+        galleryMenuBar = galleryMenu();
+        window.setJMenuBar(canvasMenuBar);
 
         window.setSize(800, 830);
         window.setResizable(false);
@@ -110,7 +116,7 @@ class Editor {
         JMenuItem viewGallery = new JMenuItem("View Gallery");
         viewGallery.addActionListener(e -> {
             cardLayout.show(cards, "Gallery");
-            window.setJMenuBar(galleryMenu());
+            window.setJMenuBar(galleryMenuBar);
         });
 
         fileMenu.add(saveToGallery);
@@ -257,7 +263,7 @@ class Editor {
            the canvas panel from the card layout. */
         JButton back = new JButton("Return to Canvas");
         back.addActionListener(e -> {
-            window.setJMenuBar(canvasMenu());
+            window.setJMenuBar(canvasMenuBar);
             cardLayout.show(cards, "Canvas");
         });
 
