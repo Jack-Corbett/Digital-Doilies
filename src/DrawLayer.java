@@ -1,13 +1,19 @@
+import sun.security.provider.SHA;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.util.Stack;
 
 /**
- * The transparent drawing layer that the user draws their pattern on to.
+ * The transparent drawing layer that the user draws their pattern on to. Each time the user presses the mouse a point
+ * is drawn. Each time they drag the mouse a line is drawn - this produces a much smoother image than using
+ * points alone. Once the mouse is released this saves a sketch which holds the point and the lines the user has
+ * drawn. This makes it easy to undo and redo drawn sketches.
  */
 public class DrawLayer extends JPanel {
 
@@ -50,6 +56,8 @@ public class DrawLayer extends JPanel {
 
         // Handles mouse pressed and released events
         addMouseListener(new MouseAdapter() {
+            private boolean drawPoint = true;
+
             /**
              * Store the current coordinates, start a new sketch and clear the redo stack
              * @param e mouse event
@@ -63,15 +71,29 @@ public class DrawLayer extends JPanel {
                 sketch = new Sketch(brushColour, brushWidth, reflect, erase);
                 // Once a new sketch has started clear the redo stack to avoid concurrency issues
                 redoStack.clear();
+
+                // If the graphics context isn't empty and this is the first event for the current sketch
+                if (g2 != null && drawPoint) {
+                    // Create a new point at the current mouse position
+                    Ellipse2D point = new Ellipse2D.Double(oldX, oldY, brushWidth-0.9, brushWidth-0.9);
+                    // Add the point to the sketch object
+                    sketch.setStartPoint(point);
+                    // Draw the point (respecting reflection and number of sectors)
+                    drawShape(point);
+                    // Set the flag so another point will not be drawn until the mouse has been released
+                    drawPoint = false;
+                }
             }
 
             /**
-             * Push the current sketch to the undo stack as the mouse has been released
+             * Push the current sketch to the undo stack as the mouse has been released and set the
+             * drawPoint flag to true.
              * @param e mouse event
              */
             @Override
             public void mouseReleased(MouseEvent e) {
                 undoStack.push(sketch);
+                drawPoint = true;
             }
         });
 
@@ -92,7 +114,12 @@ public class DrawLayer extends JPanel {
                     sketch.addLine(line);
 
                     // Draw the lines on the image
-                    drawLine(line);
+                    drawShape(line);
+
+                    /* Update the old coordinates to the new - this allows smooth line drawing by having multiple lines
+                    make up a sketch. */
+                    oldX = currentX;
+                    oldY = currentY;
                 }
             }
         });
@@ -144,12 +171,12 @@ public class DrawLayer extends JPanel {
     /**
      * Draws a line, rotating it through every sector and reflecting it in each sector depending on the flags.
      * It also sets the brush colour, size and switches between clearing or drawing depending on the erase flag.
-     * @param line The Line2D object to be drawn.
+     * @param shape The shape object to be drawn.
      */
-    private void drawLine(Line2D line) {
+    private void drawShape(Shape shape) {
         /* Initialise reflectedLine to null to avoid compiler errors if reflect isn't true as it is used
            in separate if statements. */
-        Shape reflectedLine = null;
+        Shape reflectedShape = null;
 
         if (reflect) {
             /* Use a transformation to move the line to the y axis, flip it horizontally and then move it back to it's
@@ -160,7 +187,7 @@ public class DrawLayer extends JPanel {
             reflectLine.translate(-400, 0);
 
             // Apply the transformation to our line and store it
-            reflectedLine = reflectLine.createTransformedShape(line);
+            reflectedShape = reflectLine.createTransformedShape(shape);
         }
 
         /* Loop through each sector and draw the line(s) by counting up by the angle between each sector.
@@ -168,7 +195,7 @@ public class DrawLayer extends JPanel {
         for (double i = 0; i <= 360; i = i + ((double) 360 / editor.getNumberSectors())) {
 
             // Use a transformation to rotate the line through each sector about the center point
-            AffineTransform rotateLine =
+            AffineTransform rotate =
                     AffineTransform.getRotateInstance(
                             Math.toRadians(i), 400, 400);
 
@@ -185,21 +212,16 @@ public class DrawLayer extends JPanel {
             }
 
             // Draw the original line rotated through each sector
-            g2.draw(rotateLine.createTransformedShape(line));
+            g2.draw(rotate.createTransformedShape(shape));
 
             // Draw the reflected line mirrored in each sector if reflection is toggled
             if (reflect) {
-                g2.draw(rotateLine.createTransformedShape(reflectedLine));
+                g2.draw(rotate.createTransformedShape(reflectedShape));
             }
         }
 
         // Refresh the draw area
         repaint();
-
-        /* Update the old coordinates to the new - this allows smooth line drawing by having multiple lines
-           make up a sketch. */
-        oldX = currentX;
-        oldY = currentY;
     }
 
     /**
@@ -257,10 +279,13 @@ public class DrawLayer extends JPanel {
             brushWidth = sketch.getWidth();
             reflect = sketch.getReflect();
             erase = sketch.getErase();
+            Ellipse2D startPoint = sketch.getStartPoint();
+
+            drawShape(startPoint);
 
             // Loop through each line in the sketch and draw them on the image
             for (Line2D line : sketch.getLines()) {
-                drawLine(line);
+                drawShape(line);
             }
         }
 

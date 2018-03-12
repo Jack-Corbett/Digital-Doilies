@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
 
@@ -20,6 +21,8 @@ class Sketch {
     // Erase toggle
     private Boolean erase;
 
+    private Ellipse2D startPoint;
+
     // Stores all the lines that made up the sketch
     private ArrayList<Line2D> lines = new ArrayList<>();
 
@@ -35,6 +38,13 @@ class Sketch {
         this.width = width;
         this.reflect = reflect;
         this.erase = erase;
+    }
+
+    /**
+     * @param point The point drawn at the start of the sketch
+     */
+    void setStartPoint(Ellipse2D point) {
+        startPoint = point;
     }
 
     /**
@@ -74,4 +84,8 @@ class Sketch {
      * @return whether to set the composite to clear to remove parts of other sketches
      */
     Boolean getErase() { return erase; }
+
+    Ellipse2D getStartPoint() {
+        return startPoint;
+    }
 }
