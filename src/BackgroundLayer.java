@@ -5,7 +5,8 @@ import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 
 /**
- * Represents the background layer which holds the black background and sector lines.
+ * Represents the background layer which holds the black background and sector lines. This is redrawn when the user
+ * toggles sector lines or changes the number of sector lines.
  */
 public class BackgroundLayer extends JPanel {
 
@@ -46,12 +47,12 @@ public class BackgroundLayer extends JPanel {
             // Loop from 0 to 360, using the number of sectors to calculate the step. Drawing copies of the line.
             for (double i = 0; i <= 360; i = i + ((double) 360 / editor.getNumberSectors())) {
                 // Define a rotation of the calculated number of degrees about the origin of the line (center)
-                AffineTransform at =
+                AffineTransform rotate =
                         AffineTransform.getRotateInstance(
                                 Math.toRadians(i), sectorLine.getX1(), sectorLine.getY1());
 
                 // Draw the rotated line
-                g2.draw(at.createTransformedShape(sectorLine));
+                g2.draw(rotate.createTransformedShape(sectorLine));
             }
         }
 
@@ -67,7 +68,7 @@ public class BackgroundLayer extends JPanel {
     }
 
     /**
-     * Create a new image to draw onto or refresh the displayed image.
+     * Create a new image to draw onto or refreshes the displayed image.
      * @param g graphics object.
      */
     @Override

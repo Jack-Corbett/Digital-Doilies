@@ -23,7 +23,7 @@ public class DrawLayer extends JPanel {
     // Stores the transparent image for the user to draw onto
     private BufferedImage image;
 
-    // Reference the graphics object to ensure all methods can access it
+    // References the graphics object for the image to ensure all methods can access it
     private Graphics2D g2;
 
     // Stores the current brush stroke style
@@ -43,19 +43,20 @@ public class DrawLayer extends JPanel {
     private Stack<Sketch> undoStack = new Stack<>();
     private Stack<Sketch> redoStack = new Stack<>();
 
-    /* Object to store the lines drawn while the mouse is dragged along with: brush colour and width and the state of
-       the erase and reflect flags. */
+    /* Object to store the lines drawn while the mouse is dragged along with: brush colour, brush width and the state
+    of the erase and reflect flags. */
     private Sketch sketch;
 
     /**
      * Constructor to instantiate the drawing layer and attach listeners to act on users mouse input.
      */
     DrawLayer(Editor editor) {
-        // Store a reference to the editor
+        // Store a reference to the editor object which holds the JFrame
         this.editor = editor;
 
         // Handles mouse pressed and released events
         addMouseListener(new MouseAdapter() {
+            // Flag to ensure the point is only drawn when the mouse is first pressed
             private boolean drawPoint = true;
 
             /**
@@ -164,12 +165,12 @@ public class DrawLayer extends JPanel {
     }
 
     /**
-     * @return the drawn image which is used to save to the gallery
+     * @return the drawn image - which is used to save to the gallery
      */
     BufferedImage getImage() { return image; }
 
     /**
-     * Draws a line, rotating it through every sector and reflecting it in each sector depending on the flags.
+     * Draws a point or line, rotating it through every sector and reflecting it in each sector depending on the flags.
      * It also sets the brush colour, size and switches between clearing or drawing depending on the erase flag.
      * @param shape The shape object to be drawn.
      */
