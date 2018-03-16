@@ -1,5 +1,3 @@
-import sun.security.provider.SHA;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -23,7 +21,7 @@ public class DrawLayer extends JPanel {
     // Stores the transparent image for the user to draw onto
     private BufferedImage image;
 
-    // Reference the graphics object to ensure all methods can access it
+    // References the graphics object for the image to ensure all methods can access it
     private Graphics2D g2;
 
     // Stores the current brush stroke style
@@ -43,19 +41,20 @@ public class DrawLayer extends JPanel {
     private Stack<Sketch> undoStack = new Stack<>();
     private Stack<Sketch> redoStack = new Stack<>();
 
-    /* Object to store the lines drawn while the mouse is dragged along with: brush colour and width and the state of
-       the erase and reflect flags. */
+    /* Object to store the lines drawn while the mouse is dragged along with: brush colour, brush width and the state
+    of the erase and reflect flags. */
     private Sketch sketch;
 
     /**
      * Constructor to instantiate the drawing layer and attach listeners to act on users mouse input.
      */
     DrawLayer(Editor editor) {
-        // Store a reference to the editor
+        // Store a reference to the editor object which holds the JFrame
         this.editor = editor;
 
         // Handles mouse pressed and released events
         addMouseListener(new MouseAdapter() {
+            // Flag to ensure the point is only drawn when the mouse is first pressed
             private boolean drawPoint = true;
 
             /**
@@ -74,8 +73,11 @@ public class DrawLayer extends JPanel {
 
                 // If the graphics context isn't empty and this is the first event for the current sketch
                 if (g2 != null && drawPoint) {
-                    // Create a new point at the current mouse position
-                    Ellipse2D point = new Ellipse2D.Double(oldX, oldY, brushWidth-0.9, brushWidth-0.9);
+                    /* Create a new point at the current mouse position, correct the coordinates to center on the mouse
+                     * and set the diameter to 1.3 times the brush length as this gives a good size balance. */
+                    double diameter = brushWidth * 1.3;
+                    Ellipse2D point = new Ellipse2D.Double(oldX-(diameter/2), oldY-(diameter/2),
+                            diameter, diameter);
                     // Add the point to the sketch object
                     sketch.setStartPoint(point);
                     // Draw the point (respecting reflection and number of sectors)
@@ -164,12 +166,12 @@ public class DrawLayer extends JPanel {
     }
 
     /**
-     * @return the drawn image which is used to save to the gallery
+     * @return the drawn image - which is used to save to the gallery
      */
     BufferedImage getImage() { return image; }
 
     /**
-     * Draws a line, rotating it through every sector and reflecting it in each sector depending on the flags.
+     * Draws a point or line, rotating it through every sector and reflecting it in each sector depending on the flags.
      * It also sets the brush colour, size and switches between clearing or drawing depending on the erase flag.
      * @param shape The shape object to be drawn.
      */
@@ -212,11 +214,19 @@ public class DrawLayer extends JPanel {
             }
 
             // Draw the original line rotated through each sector
-            g2.draw(rotate.createTransformedShape(shape));
+            if (shape instanceof Ellipse2D) {
+                g2.fill(rotate.createTransformedShape(shape));
+            } else {
+                g2.draw(rotate.createTransformedShape(shape));
+            }
 
             // Draw the reflected line mirrored in each sector if reflection is toggled
             if (reflect) {
-                g2.draw(rotate.createTransformedShape(reflectedShape));
+                if (shape instanceof Ellipse2D) {
+                    g2.fill(rotate.createTransformedShape(reflectedShape));
+                } else {
+                    g2.draw(rotate.createTransformedShape(reflectedShape));
+                }
             }
         }
 

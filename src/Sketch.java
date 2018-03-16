@@ -48,6 +48,13 @@ class Sketch {
     }
 
     /**
+     * @return the ellipse at the start of the sketch
+     */
+    Ellipse2D getStartPoint() {
+        return startPoint;
+    }
+
+    /**
      * @param line is added to the sketches array list.
      */
     void addLine(Line2D line) {
@@ -84,8 +91,4 @@ class Sketch {
      * @return whether to set the composite to clear to remove parts of other sketches
      */
     Boolean getErase() { return erase; }
-
-    Ellipse2D getStartPoint() {
-        return startPoint;
-    }
 }
