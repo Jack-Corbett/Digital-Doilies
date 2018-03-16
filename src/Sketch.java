@@ -21,9 +21,10 @@ class Sketch {
     // Erase toggle
     private Boolean erase;
 
+    // Stores a circle at the start of the sketch
     private Ellipse2D startPoint;
 
-    // Stores all the lines that made up the sketch
+    // Stores all the lines that make up the sketch
     private ArrayList<Line2D> lines = new ArrayList<>();
 
     /**

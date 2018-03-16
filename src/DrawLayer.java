@@ -284,13 +284,14 @@ public class DrawLayer extends JPanel {
 
         // Loop while there are still sketches to be redrawn
         for (Sketch sketch : undoStack) {
-            // Set all brush settings for that sketch
+            // Set all brush settings for that sketch and fetch the start point
             brushColour = sketch.getColour();
             brushWidth = sketch.getWidth();
             reflect = sketch.getReflect();
             erase = sketch.getErase();
             Ellipse2D startPoint = sketch.getStartPoint();
 
+            // Draw the start point before the lines
             drawShape(startPoint);
 
             // Loop through each line in the sketch and draw them on the image
