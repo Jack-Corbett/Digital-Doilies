@@ -75,7 +75,7 @@ class Editor {
         galleryMenuBar = galleryMenu();
         window.setJMenuBar(canvasMenuBar);
 
-        window.setSize(800, 830);
+        window.setSize(800, 844);
         window.setResizable(false);
         window.setVisible(true);
     }
@@ -193,7 +193,7 @@ class Editor {
         JMenuItem sizeMenu = new JMenuItem("Size");
         sizeMenu.addActionListener(e -> {
             JSpinner sizeSpinner = new JSpinner(new SpinnerNumberModel(drawLayer.getBrushWidth(),
-                    1, 10, 1));
+                    1, 15, 1));
 
             int option = JOptionPane.showOptionDialog(drawLayer, sizeSpinner, "Choose Brush Width",
                     JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
@@ -217,7 +217,7 @@ class Editor {
 
         // Spinner to change the number of sectors for the doily. The default is 12 with a max of 36 and minimum of 2.
         JLabel sectorLabel = new JLabel("Number of Sectors:");
-        JSpinner sectors = new JSpinner(new SpinnerNumberModel(12, 2, 36, 1));
+        JSpinner sectors = new JSpinner(new SpinnerNumberModel(12, 2, 40, 1));
         // When the value is changed redraw the background and draw layer.
         sectors.addChangeListener(e -> {
             numberSectors = ((Integer) sectors.getValue());
